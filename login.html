@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <style>
+    :root{
+      --bg1:#0b1320; --bg2:#0a1b2a;
+      --card: rgba(20,28,40,.72);
+      --stroke: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.88);
+      --muted: rgba(255,255,255,.55);
+      --blue: #1387ff;
+      --blue2:#0f6ddd;
+      --shadow: 0 24px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; min-height:100vh;
+      display:grid; place-items:center;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+      background:
+        radial-gradient(1000px 600px at 70% 20%, rgba(19,135,255,.25), transparent 60%),
+        radial-gradient(800px 500px at 20% 80%, rgba(50,255,220,.10), transparent 55%),
+        linear-gradient(140deg, var(--bg1), var(--bg2));
+      padding: 24px;
+    }
+    .card{
+      width:min(420px, 92vw);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 22px 18px;
+      backdrop-filter: blur(12px);
+    }
+    .title{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom: 14px;
+    }
+    .title h1{ font-size: 18px; margin:0; letter-spacing:.2px; }
+    .title small{ color:var(--muted); }
+    .field{ margin-top: 12px; }
+    label{ display:block; font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+    input{
+      width:100%;
+      padding: 12px 12px;
+      background: rgba(0,0,0,.28);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 12px;
+      color: var(--text);
+      outline: none;
+    }
+    input:focus{ border-color: rgba(19,135,255,.55); box-shadow: 0 0 0 3px rgba(19,135,255,.15); }
+    .btn{
+      margin-top: 14px;
+      width:100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, var(--blue), var(--blue2));
+      color:white; font-weight: 650;
+      cursor:pointer;
+    }
+    .row{
+      display:flex; justify-content:space-between; align-items:center;
+      margin-top: 10px; gap: 10px;
+      color: var(--muted); font-size: 12px;
+    }
+    .link{
+      color: rgba(19,135,255,.9);
+      text-decoration:none;
+    }
+    .hint{
+      margin-top: 10px;
+      font-size: 12px; color: var(--muted);
+      line-height: 1.45;
+    }
+    .err{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,70,70,.25);
+      background: rgba(255,70,70,.08);
+      color: rgba(255,220,220,.95);
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title">
+      <h1>Login</h1>
+      <small>AdminUserManager</small>
+    </div>
+
+    <div class="field">
+      <label for="login">Login</label>
+      <input id="login" autocomplete="username" placeholder="masalan: alice.j" />
+    </div>
+
+    <div class="field">
+      <label for="password">Parol</label>
+      <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+    </div>
+
+    <button class="btn" id="btnLogin">Kirish</button>
+
+    <div class="row">
+      <span>Demo: userlarni admin.html’da yaratasiz</span>
+      <a class="link" href="admin.html">Admin panel</a>
+    </div>
+
+    <div class="err" id="errBox"></div>
+  </div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const errBox = $("errBox");
+
+  function getUsers(){
+    try { return JSON.parse(localStorage.getItem("aum_users") || "[]"); }
+    catch { return []; }
+  }
+
+  $("btnLogin").addEventListener("click", () => {
+    const login = $("login").value.trim();
+    const password = $("password").value;
+
+    errBox.style.display = "none";
+    errBox.textContent = "";
+
+    const users = getUsers();
+    const u = users.find(x => x.credentials && x.credentials.login === login);
+
+    if(!u){
+      errBox.textContent = "Bunday login topilmadi. Admin panelda user yarating.";
+      errBox.style.display = "block";
+      return;
+    }
+    if(u.credentials.password !== password){
+      errBox.textContent = "Parol noto‘g‘ri.";
+      errBox.style.display = "block";
+      return;
+    }
+
+    // Kirish bo‘ldi: demo uchun role bo‘yicha yo‘naltiramiz
+    localStorage.setItem("aum_session", JSON.stringify({
+      userId: u.id,
+      role: u.role,
+      at: Date.now()
+    }));
+
+    if(u.role === "Administrator"){
+      window.location.href = "admin.html";
+    } else {
+      alert("Login OK Role: " + u.role + " (demo)");
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AdminUserManager</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#16202b;
+      --panel2:#101822;
+      --text:#e8eef6;
+      --muted:#a6b3c4;
+      --border:rgba(255,255,255,.08);
+      --accent:#2d87ff;
+      --accent2:#19c37d;
+      --danger:#ff4d4d;
+      --shadow: 0 12px 40px rgba(0,0,0,.55);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 500px at 40% -10%, rgba(45,135,255,.18), transparent 60%),
+                  radial-gradient(900px 450px at 90% 0%, rgba(25,195,125,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .app{
+      width:min(980px, 100%);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      background: rgba(10,14,20,.65);
+      backdrop-filter: blur(8px);
+      overflow:hidden;
+    }
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 18px;
+      border-bottom:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+    }
+    .brand{
+      display:flex; gap:10px; align-items:center; font-weight:700;
+    }
+    .gear{
+      width:10px;height:10px;border-radius:3px;background:var(--accent);
+      box-shadow:0 0 0 3px rgba(45,135,255,.25);
+    }
+    .tabs{
+      display:flex; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border);
+    }
+    .tab{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      transition:.2s;
+      user-select:none;
+    }
+    .tab.active{
+      color: var(--text);
+      border-color: rgba(45,135,255,.35);
+      background: rgba(45,135,255,.10);
+    }
+    .page{
+      display:none;
+      padding:18px;
+    }
+    .page.active{display:block}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding:16px;
+      margin:14px 0;
+    }
+    .card h3{
+      margin:0 0 10px 0;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .field{
+      flex: 1 1 240px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:10px;
+    }
+    label{font-size:12px; color:var(--muted)}
+    input, select{
+      background: rgba(0,0,0,.25);
+      border:1px solid var(--border);
+      color:var(--text);
+      border-radius:12px;
+      padding:11px 12px;
+      outline:none;
+    }
+    input:focus, select:focus{
+      border-color: rgba(45,135,255,.55);
+      box-shadow: 0 0 0 3px rgba(45,135,255,.15);
+    }
+    .slider{
+      width:100%;
+    }
+    .muted{color:var(--muted); font-size:12px}
+    .actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      padding:14px 18px;
+      border-top:1px solid var(--border);
+    }
+    .btn{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:700;
+      transition:.2s;
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btn.primary{
+      background: rgba(45,135,255,.18);
+      border-color: rgba(45,135,255,.45);
+    }
+    .btn.success{
+      background: rgba(25,195,125,.16);
+      border-color: rgba(25,195,125,.40);
+    }
+    .btn.ghost{
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+    }
+    .btn.danger{
+      background: rgba(255,77,77,.12);
+      border-color: rgba(255,77,77,.35);
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      font-size:12px;
+      color:var(--muted);
+    }
+    .grid-2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:720px){
+      .grid-2{grid-template-columns:1fr}
+    }
+
+    .kv{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background: rgba(0,0,0,.18);
+      margin-top:10px;
+    }
+    .kv b{font-size:13px}
+    .kv code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:13px;
+      color:#d8e6ff;
+      background: rgba(45,135,255,.12);
+      border:1px solid rgba(45,135,255,.20);
+      padding:6px 8px;
+      border-radius:10px;
+      overflow-wrap:anywhere;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.65);
+      border:1px solid var(--border);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      display:none;
+      font-size:13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="topbar">
+      <div class="brand"><span class="gear"></span> AdminUserManager</div>
+      <div class="pill">Settings / Add User / Credentials</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-page="settings">Settings</div>
+      <div class="tab" data-page="addUser">User qo‘shish</div>
+      <div class="tab" data-page="creds">Login/Parol</div>
+    </div>
+
+    <!-- 2-page SETTINGS -->
+    <section class="page active" id="settings">
+      <div class="card">
+        <h3>Password Policies</h3>
+        <div class="row">
+          <div class="field">
+            <label>Password length</label>
+            <select id="passwordLength">
+              <option>6</option><option selected>8</option><option>10</option><option>12</option><option>16</option>
+            </select>
+            <div class="muted">Parol uzunligi</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Roles & Permissions</h3>
+        <div class="row">
+          <div class="field">
+            <label>Select Role</label>
+            <select id="defaultRole">
+              <option selected>Admin</option>
+              <option>Teacher</option>
+              <option>Student</option>
+              <option>Manager</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Theme</h3>
+        <div class="row">
+          <div class="field" style="flex:1 1 100%">
+            <label>Brightness</label>
+            <input class="slider" id="brightness" type="range" min="20" max="110" value="80" />
+            <div class="muted">UI yorqinligi (demo).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="cancelSettings">Cancel</button>
+        <button class="btn primary" id="saveSettings">Save</button>
+      </div>
+    </section>
+
+    <!-- 3-page ADD USER -->
+    <section class="page" id="addUser">
+      <div class="card">
+        <h3>User qo‘shish</h3>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Full name</label>
+            <input id="fullName" placeholder="Masalan:Palonchi Palonchiyev" />
+          </div>
+          <div class="field">
+            <label>Phone yoki Email</label>
+            <input id="contact" placeholder="+998... yoki example@gmail.com" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>Role</label>
+            <select id="role"></select>
+          </div>
+          <div class="field">
+            <label>Username prefix (ixtiyoriy)</label>
+            <input id="prefix" placeholder="Masalan: rs" />
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn success" id="generateBtn">Generate login/parol</button>
+          <button class="btn primary" id="createBtn">Create user</button>
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+        </div>
+
+        <div id="previewBox" style="display:none;">
+          <div class="kv"><b>Login</b> <code id="pLogin">—</code></div>
+          <div class="kv"><b>Password</b> <code id="pPass">—</code></div>
+          <div class="kv"><b>Role</b> <code id="pRole">—</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-page CREDENTIALS -->
+    <section class="page" id="creds">
+      <div class="card">
+        <h3>Login / Parol (berib yuborish uchun)</h3>
+
+        <div class="kv">
+          <b>Login</b>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <code id="cLogin">—</code>
+            <button class="btn" onclick="copyText('cLogins — use could override?')"></button>
+          </div>
+        </div>
+
+        <div class="kv">
+          <b>Password</b>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <code id="cPass">—</code>
+            <button class="btn" id="copyPassBtn">Copy</button>
+          </div>
+        </div>
+
+        <div class="kv">
+          <b>Role</b>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <code id="cRole">—</code>
+            <button class="btn" id="copyAllBtn">Copy all</button>
+          </div>
+        </div>
+
+        <div class="muted" style="margin-top:10px;">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn ghost" id="backToAdd">Back</button>
+        <button class="btn primary" id="doneBtn">Done</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // -------- Tabs / Pages ----------
+    const tabs = document.querySelectorAll('.tab');
+    const pages = {
+      settings: document.getElementById('settings'),
+      addUser: document.getElementById('addUser'),
+      creds: document.getElementById('creds'),
+    };
+    function go(page){
+      Object.keys(pages).forEach(k => pages[k].classList.toggle('active', k===page));
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.page===page));
+    }
+    tabs.forEach(t => t.addEventListener('click', () => go(t.dataset.page)));
+
+    // -------- Settings state ----------
+    const passwordLengthEl = document.getElementById('passwordLength');
+    const defaultRoleEl = document.getElementById('defaultRole');
+    const brightnessEl = document.getElementById('brightness');
+    const roleEl = document.getElementById('role');
+
+    function syncRoleOptions(){
+      // same options as defaultRole
+      roleEl.innerHTML = defaultRoleEl.innerHTML;
+      roleEl.value = defaultRoleEl.value;
+    }
+    syncRoleOptions();
+
+    document.getElementById('saveSettings').addEventListener('click', () => {
+      syncRoleOptions();
+      toast('Settings saqlandi');
+      go('addUser');
+    });
+
+    document.getElementById('cancelSettings').addEventListener('click', () => {
+      toast('Cancel');
+    });
+
+    brightnessEl.addEventListener('input', (e) => {
+      // demo only: brighten background a bit
+      const v = Number(e.target.value);
+      document.body.style.filter = `brightness(${v}%)`;
+    });
+
+    // -------- Generator ----------
+    function randInt(min, max){
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    function pick(str){
+      return str[randInt(0, str.length - 1)];
+    }
+    function genPassword(len){
+      const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+      const lower = "abcdefghijkmnpqrstuvwxyz";
+      const nums  = "23456789";
+      const sym   = "!@#$%_+-?";
+      const all = upper + lower + nums + sym;
+
+      // ensure at least one from each group
+      let out = [
+        pick(upper), pick(lower), pick(nums), pick(sym)
+      ];
+      while(out.length < len) out.push(pick(all));
+
+      // shuffle
+      for(let i=out.length-1; i>0; i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out.join('');
+    }
+    function sanitizeUsername(s){
+      return (s || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g,'')
+        .slice(0, 12);
+    }
+    function genLogin(fullName, prefix){
+      const base = sanitizeUsername((fullName || '').split(' ')[0] || 'user');
+      const pre = sanitizeUsername(prefix);
+      const tail = String(randInt(10,99));
+      return (pre ? pre + '_' : '') + (base || 'user') + tail;
+    }
+
+    // preview
+    const previewBox = document.getElementById('previewBox');
+    const pLogin = document.getElementById('pLogin');
+    const pPass = document.getElementById('pPass');
+    const pRole = document.getElementById('pRole');
+
+    // creds page
+    const cLogin = document.getElementById('cLogin');
+    const cPass = document.getElementById('cPass');
+    const cRole = document.getElementById('cRole');
+
+    let state = {
+      login: '',
+      password: '',
+      role: 'Admin',
+    };
+
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      const fullName = document.getElementById('fullName').value.trim();
+      const prefix = document.getElementById('prefix').value.trim();
+      const role = roleEl.value || defaultRoleEl.value;
+      const len = Number(passwordLengthEl.value) || 8;
+
+      state.login = genLogin(fullName, prefix);
+      state.password = genPassword(len);
+      state.role = role;
+
+      previewBox.style.display = 'block';
+      pLogin.textContent = state.login;
+      pPass.textContent = state.password;
+      pRole.textContent = state.role;
+
+      toast('Login/parol generatsiya qilindi');
+    });
+
+    document.getElementById('createBtn').addEventListener('click', () => {
+      if(!state.login || !state.password){
+        toast('Oldin Generate bosing!');
+        return;
+      }
+      // demo: go to credentials page
+      cLogin.textContent = state.login;
+      cPass.textContent = state.password;
+      cRole.textContent = state.role;
+      go('creds');
+    });
+
+    // -------- Copy helpers ----------
+    function toast(msg){
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => t.style.display = 'none', 1600);
+    }
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        toast('Copied');
+      }catch(e){
+        // fallback
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        toast('Copied');
+      }
+    }
+
+    // Fix: attach copy buttons properly
+    const copyLoginBtn = document.createElement('button');
+    copyLoginBtn.className = 'btn';
+    copyLoginBtn.textContent = 'Copy';
+    copyLoginBtn.onclick = () => copyToClipboard(cLogin.textContent);
+    cLogin.parentElement.appendChild(copyLoginBtn);
+
+    document.getElementById('copyPassBtn').addEventListener('click', () => {
+      copyToClipboard(cPass.textContent);
+    });
+
+    document.getElementById('copyAllBtn').addEventListener('click', () => {
+      const all = `Login: ${cLogin.textContent}\nPassword: ${cPass.textContent}\nRole: ${cRole.textContent}`;
+      copyToClipboard(all);
+    });
+
+    document.getElementById('backToAdd').addEventListener('click', () => go('addUser'));
+    document.getElementById('doneBtn').addEventListener('click', () => {
+      toast('Done');
+      go('addUser');
+    });
+
+    // init defaults from settings
+    defaultRoleEl.addEventListener('change', syncRoleOptions);
+  </script>
+</body>
+</html>

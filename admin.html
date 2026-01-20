@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AdminUserManager</title>
+  <style>
+    :root{
+      --bg1:#060b12; --bg2:#071827;
+      --card: rgba(18,26,38,.72);
+      --card2: rgba(18,26,38,.58);
+      --stroke: rgba(255,255,255,.10);
+      --stroke2: rgba(255,255,255,.07);
+      --text: rgba(255,255,255,.90);
+      --muted: rgba(255,255,255,.55);
+      --blue: #1387ff;
+      --blue2:#0f6ddd;
+      --shadow: 0 30px 70px rgba(0,0,0,.60);
+      --radius: 20px;
+      --radius2: 14px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; min-height:100vh;
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+      background:
+        radial-gradient(900px 600px at 65% 18%, rgba(19,135,255,.25), transparent 60%),
+        radial-gradient(900px 520px at 18% 80%, rgba(50,255,220,.10), transparent 55%),
+        linear-gradient(140deg, var(--bg1), var(--bg2));
+      padding: 26px;
+    }
+
+    .shell{
+      width:min(1080px, 96vw);
+      margin: 0 auto;
+      background: rgba(10,14,22,.55);
+      border: 1px solid var(--stroke2);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow:hidden;
+    }
+
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--stroke2);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight: 750;
+      letter-spacing:.2px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 4px rgba(19,135,255,.18);
+    }
+
+    .top-actions{
+      display:flex; gap:10px; align-items:center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .pill{
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.03);
+    }
+    .link{
+      color: rgba(19,135,255,.9);
+      text-decoration:none;
+    }
+
+    .tabs{
+      display:flex;
+      gap: 10px;
+      padding: 14px 18px;
+    }
+    .tab{
+      padding: 9px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.03);
+      color: var(--muted);
+      cursor:pointer;
+      user-select:none;
+      font-weight: 650;
+      font-size: 13px;
+    }
+    .tab.active{
+      color: var(--text);
+      background: rgba(19,135,255,.15);
+      border-color: rgba(19,135,255,.35);
+      box-shadow: 0 0 0 3px rgba(19,135,255,.10) inset;
+    }
+
+    .content{ padding: 0 18px 18px; }
+    .panel{
+      display:none;
+      background: var(--card);
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .panel.show{ display:block; }
+
+    .section{
+      background: var(--card2);
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius2);
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .section h3{
+      margin:0 0 10px;
+      font-size: 14px;
+      letter-spacing:.2px;
+    }
+    .muted{ color: var(--muted); font-size: 12px; }
+
+    .row{
+      display:flex;
+      gap: 12px;
+      flex-wrap:wrap;
+    }
+
+    label{ display:block; font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+    input, select{
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.26);
+      color: var(--text);
+      outline:none;
+    }
+    input:focus, select:focus{
+      border-color: rgba(19,135,255,.55);
+      box-shadow: 0 0 0 3px rgba(19,135,255,.15);
+    }
+    .col{
+      flex: 1 1 240px;
+      min-width: 240px;
+    }
+
+    .btn{
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      cursor:pointer;
+      font-weight: 700;
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, var(--blue), var(--blue2));
+      color:white;
+    }
+    .btn.danger{
+      background: rgba(255,70,70,.12);
+      border-color: rgba(255,70,70,.20);
+    }
+    .btn.ghost{
+      background: transparent;
+      border-color: rgba(255,255,255,.08);
+      color: var(--muted);
+    }
+    .btn.small{ padding: 8px 10px; font-size: 12px; border-radius: 12px; }
+
+    .table-wrap{
+      overflow:auto;
+      border-radius: 16px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.02);
+    }
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+    }
+    th, td{
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      text-align:left;
+      font-size: 13px;
+    }
+    th{ color: var(--muted); font-weight: 700; }
+    tr:hover td{ background: rgba(255,255,255,.02); }
+
+    .avatar{
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.14);
+      display:grid; place-items:center;
+      background: rgba(0,0,0,.25);
+      font-weight: 800;
+      color: rgba(255,255,255,.78);
+    }
+    .actions{
+      display:flex; gap:10px;
+    }
+
+    .toolbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 12px;
+      margin-top: 12px;
+      flex-wrap:wrap;
+    }
+    .search{
+      width: min(360px, 92vw);
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.45);
+      color: var(--text);
+      display:none;
+      box-shadow: 0 18px 40px rgba(0,0,0,.40);
+      backdrop-filter: blur(10px);
+      font-size: 13px;
+    }
+
+    .cred-grid{
+      display:grid;
+      gap: 10px;
+      grid-template-columns: 1fr;
+      margin-top: 10px;
+    }
+    .cred-row{
+      display:grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 10px;
+      align-items:center;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+      border-radius: 14px;
+    }
+    .cred-key{ color: var(--muted); font-size: 12px; }
+    .cred-val{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .right{
+      display:flex; gap:10px; justify-content:flex-end;
+      margin-top: 12px;
+    }
+    .hint{
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span> AdminUserManager</div>
+      <div class="top-actions">
+        <span class="pill" id="crumbs">Settings / Add User / Credentials</span>
+        <a class="pill link" href="login.html">Login page</a>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="users">Userlar</div>
+      <div class="tab" data-tab="add">User qo‘shish</div>
+      <div class="tab" data-tab="cred">Login/Parol</div>
+      <div class="tab" data-tab="settings">Settings</div>
+    </div>
+
+    <div class="content">
+      <!-- USERS -->
+      <div class="panel show" id="panel-users">
+        <div class="toolbar">
+          <input class="search" id="search" placeholder="Search users..." />
+          <button class="btn primary" id="goAdd">Add User</button>
+        </div>
+
+        <div class="section" style="margin-top:12px;">
+          <h3>Userlar ro‘yxati</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:80px;">Photo</th>
+                  <th>Full Name</th>
+                  <th style="width:160px;">Role</th>
+                  <th style="width:200px;">Phone</th>
+                  <th style="width:230px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD USER -->
+      <div class="panel" id="panel-add">
+        <div class="section">
+          <h3>User qo‘shish / tahrirlash</h3>
+          <div class="row">
+            <div class="col">
+              <label>Full Name</label>
+              <input id="fullName" placeholder="Masalan: Ravshan Yusupov" />
+            </div>
+            <div class="col">
+              <label>Phone</label>
+              <input id="phone" placeholder="+998 90 123 45 67" />
+            </div>
+            <div class="col">
+              <label>Role</label>
+              <select id="role">
+                <option>Administrator</option>
+                <option>Editor</option>
+                <option>Viewer</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Photo URL (ixtiyoriy)</label>
+              <input id="photo" placeholder="https://..." />
+            </div>
+          </div>
+
+          <div class="right">
+            <button class="btn ghost" id="cancelEdit">Cancel</button>
+            <button class="btn primary" id="saveUser">Save</button>
+          </div>
+
+          <div class="hint">
+          </div>
+        </div>
+      </div>
+
+      <!-- CREDENTIALS -->
+      <div class="panel" id="panel-cred">
+        <div class="section">
+          <h3>Login / Parol (berib yuborish uchun)</h3>
+          <div class="muted">User tanlang yoki Userlar tabidan “Cred” bosing.</div>
+
+          <div class="section" style="margin-top:12px;">
+            <div class="row">
+              <div class="col">
+                <label>User tanlash</label>
+                <select id="userPick"></select>
+              </div>
+              <div class="col">
+                <label>&nbsp;</label>
+                <button class="btn" id="regen">Login/Parolni qayta generatsiya</button>
+              </div>
+            </div>
+
+            <div class="cred-grid" id="credGrid"></div>
+
+            <div class="right">
+              <button class="btn" id="copyAll">Copy all</button>
+              <button class="btn primary" id="doneCred">Done</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="panel" id="panel-settings">
+        <div class="section">
+          <h3>Password Policies</h3>
+          <div class="row">
+            <div class="col" style="max-width:260px;">
+              <label>Password length</label>
+              <input id="passLen" type="number" min="4" max="32" />
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>Theme</h3>
+          <div class="row">
+            <div class="col">
+              <label>Brightness (demo)</label>
+              <input id="brightness" type="range" min="0" max="100" value="50" />
+            </div>
+          </div>
+        </div>
+
+        <div class="right">
+          <button class="btn ghost" id="resetAll">Reset data</button>
+          <button class="btn primary" id="saveSettings">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  // -------------------------
+  // Storage helpers
+  // -------------------------
+  const KEY_USERS = "aum_users";
+  const KEY_SETTINGS = "aum_settings";
+
+  function loadUsers(){
+    try { return JSON.parse(localStorage.getItem(KEY_USERS) || "[]"); }
+    catch { return []; }
+  }
+  function saveUsers(users){
+    localStorage.setItem(KEY_USERS, JSON.stringify(users));
+  }
+  function loadSettings(){
+    try {
+      return JSON.parse(localStorage.getItem(KEY_SETTINGS) || "{}");
+    } catch { return {}; }
+  }
+  function saveSettingsObj(s){
+    localStorage.setItem(KEY_SETTINGS, JSON.stringify(s));
+  }
+
+  // -------------------------
+  // UI state
+  // -------------------------
+  let users = loadUsers();
+  let settings = Object.assign({ passwordLength: 10 }, loadSettings());
+
+  let editingId = null;
+  let selectedCredUserId = null;
+
+  // -------------------------
+  // Utils
+  // -------------------------
+  function toast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(toast._tm);
+    toast._tm = setTimeout(()=> t.style.display="none", 1700);
+  }
+
+  function uid(){
+    return "u_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+  }
+
+  function slugLoginFromName(name){
+    const base = (name || "user")
+      .trim().toLowerCase()
+      .replace(/['"]/g,"")
+      .replace(/\s+/g,".")
+      .replace(/[^a-z0-9.]/g,"")
+      .replace(/\.+/g,".")
+      .replace(/^\./,"")
+      .slice(0, 14) || "user";
+    const tail = Math.random().toString(36).slice(2, 4);
+    return base + "." + tail;
+  }
+
+  function genPassword(len){
+    const L = Math.max(4, Math.min(32, Number(len)||10));
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%_-";
+    let out = "";
+    for(let i=0;i<L;i++){
+      out += chars[Math.floor(Math.random()*chars.length)];
+    }
+    return out;
+  }
+
+  function ensureCredentials(u){
+    if(!u.credentials){
+      u.credentials = {
+        login: slugLoginFromName(u.fullName),
+        password: genPassword(settings.passwordLength)
+      };
+    }
+    return u;
+  }
+
+  function copyText(txt){
+    navigator.clipboard.writeText(txt).then(()=> toast("Copied")).catch(()=> toast("Copy bo‘lmadi"));
+  }
+
+  // -------------------------
+  // Tabs
+  // -------------------------
+  const tabToPanel = {
+    users: "panel-users",
+    add: "panel-add",
+    cred: "panel-cred",
+    settings: "panel-settings",
+  };
+
+  function setCrumbs(tab){
+    const map = { users:"Users", add:"Add User", cred:"Credentials", settings:"Settings" };
+    $("crumbs").textContent = "Settings / Add User / Credentials  •  " + map[tab];
+  }
+
+  function showTab(tab){
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x.dataset.tab===tab));
+    Object.values(tabToPanel).forEach(pid => $(pid).classList.remove("show"));
+    $(tabToPanel[tab]).classList.add("show");
+    setCrumbs(tab);
+
+    if(tab === "users") renderUsers();
+    if(tab === "cred") {
+      rebuildUserPick();
+      renderCred();
+    }
+    if(tab === "settings") syncSettingsUI();
+  }
+
+  document.querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => showTab(t.dataset.tab));
+  });
+
+  // -------------------------
+  // Users table
+  // -------------------------
+  function avatarHtml(u){
+    if(u.photo){
+      return `<img src="${u.photo}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.14);" />`;
+    }
+    const ch = (u.fullName||"U").trim()[0]?.toUpperCase() || "U";
+    return `<div class="avatar">${ch}</div>`;
+  }
+
+  function renderUsers(){
+    const q = ($("search").value || "").trim().toLowerCase();
+    const tbody = $("usersTbody");
+    tbody.innerHTML = "";
+
+    const filtered = users.filter(u => {
+      if(!q) return true;
+      return (u.fullName||"").toLowerCase().includes(q) ||
+             (u.phone||"").toLowerCase().includes(q) ||
+             (u.role||"").toLowerCase().includes(q);
+    });
+
+    if(filtered.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5" style="color:rgba(255,255,255,.55);">Hech narsa topilmadi.</td></tr>`;
+      return;
+    }
+
+    filtered.forEach(u => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${avatarHtml(u)}</td>
+        <td>${escapeHtml(u.fullName || "")}</td>
+        <td>${escapeHtml(u.role || "")}</td>
+        <td>${escapeHtml(u.phone || "")}</td>
+        <td>
+          <div class="actions">
+            <button class="btn small primary" data-act="edit" data-id="${u.id}">Edit</button>
+            <button class="btn small" data-act="cred" data-id="${u.id}">Cred</button>
+            <button class="btn small danger" data-act="del" data-id="${u.id}">Delete</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  }
+
+  $("search").addEventListener("input", renderUsers);
+
+  $("usersTbody").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const act = btn.dataset.act;
+    const u = users.find(x => x.id === id);
+    if(!u) return;
+
+    if(act === "edit"){
+      editingId = id;
+      $("fullName").value = u.fullName || "";
+      $("phone").value = u.phone || "";
+      $("role").value = u.role || "Viewer";
+      $("photo").value = u.photo || "";
+      showTab("add");
+      toast("Edit mode");
+    }
+
+    if(act === "del"){
+      users = users.filter(x => x.id !== id);
+      saveUsers(users);
+      renderUsers();
+      rebuildUserPick();
+      toast("Deleted");
+    }
+
+    if(act === "cred"){
+      selectedCredUserId = id;
+      showTab("cred");
+    }
+  });
+
+  $("goAdd").addEventListener("click", () => {
+    editingId = null;
+    $("fullName").value = "";
+    $("phone").value = "";
+    $("role").value = "Viewer";
+    $("photo").value = "";
+    showTab("add");
+  });
+
+  $("cancelEdit").addEventListener("click", () => {
+    editingId = null;
+    showTab("users");
+  });
+
+  // -------------------------
+  // Save user (auto generate login/pass)
+  // -------------------------
+  $("saveUser").addEventListener("click", () => {
+    const fullName = $("fullName").value.trim();
+    const phone = $("phone").value.trim();
+    const role = $("role").value;
+    const photo = $("photo").value.trim();
+
+    if(!fullName){
+      toast("Full Name kerak");
+      return;
+    }
+
+    if(editingId){
+      const idx = users.findIndex(x => x.id === editingId);
+      if(idx >= 0){
+        users[idx].fullName = fullName;
+        users[idx].phone = phone;
+        users[idx].role = role;
+        users[idx].photo = photo;
+
+        // credentials bor bo‘lsa qoldiramiz, bo‘lmasa yaratamiz
+        ensureCredentials(users[idx]);
+      }
+      editingId = null;
+      saveUsers(users);
+      toast("Saved");
+      showTab("users");
+      return;
+    }
+
+    const u = ensureCredentials({
+      id: uid(),
+      fullName, phone, role, photo: photo || ""
+    });
+
+    users.unshift(u);
+    saveUsers(users);
+    toast("User added + credentials generated");
+    selectedCredUserId = u.id;
+    showTab("cred");
+  });
+
+  // -------------------------
+  // Credentials panel
+  // -------------------------
+  function rebuildUserPick(){
+    const pick = $("userPick");
+    pick.innerHTML = "";
+
+    if(users.length === 0){
+      pick.innerHTML = `<option value="">Avval user qo‘shing</option>`;
+      return;
+    }
+
+    users.forEach(u => {
+      const opt = document.createElement("option");
+      opt.value = u.id;
+      opt.textContent = `${u.fullName} • ${u.role}`;
+      pick.appendChild(opt);
+    });
+
+    const wanted = selectedCredUserId || users[0].id;
+    pick.value = wanted;
+  }
+
+  function currentCredUser(){
+    const id = $("userPick").value;
+    const u = users.find(x => x.id === id);
+    if(!u) return null;
+    ensureCredentials(u);
+    return u;
+  }
+
+  function renderCred(){
+    const grid = $("credGrid");
+    grid.innerHTML = "";
+    const u = currentCredUser();
+    if(!u){
+      grid.innerHTML = `<div class="muted">User topilmadi</div>`;
+      return;
+    }
+
+    const rows = [
+      ["Full Name", u.fullName],
+      ["Role", u.role],
+      ["Login", u.credentials.login],
+      ["Password", u.credentials.password],
+      ["Phone", u.phone || ""]
+    ];
+
+    rows.forEach(([k,v]) => {
+      const div = document.createElement("div");
+      div.className = "cred-row";
+      div.innerHTML = `
+        <div class="cred-key">${escapeHtml(k)}</div>
+        <div class="cred-val">${escapeHtml(v)}</div>
+        <button class="btn small" data-copy="${escapeHtml(v)}">Copy</button>
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  $("userPick").addEventListener("change", () => {
+    selectedCredUserId = $("userPick").value;
+    renderCred();
+  });
+
+  $("credGrid").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    const v = btn.getAttribute("data-copy");
+    if(v != null) copyText(v);
+  });
+
+  $("regen").addEventListener("click", () => {
+    const u = currentCredUser();
+    if(!u) return;
+    u.credentials = {
+      login: slugLoginFromName(u.fullName),
+      password: genPassword(settings.passwordLength)
+    };
+    saveUsers(users);
+    renderCred();
+    toast("Regenerated");
+  });
+
+  $("copyAll").addEventListener("click", () => {
+    const u = currentCredUser();
+    if(!u) return;
+    const text =
+`Full Name: ${u.fullName}
+Role: ${u.role}
+Login: ${u.credentials.login}
+Password: ${u.credentials.password}
+Phone: ${u.phone || ""}`;
+    copyText(text);
+  });
+
+  $("doneCred").addEventListener("click", () => showTab("users"));
+
+  // -------------------------
+  // Settings
+  // -------------------------
+  function syncSettingsUI(){
+    $("passLen").value = settings.passwordLength;
+  }
+
+  $("saveSettings").addEventListener("click", () => {
+    const len = Number($("passLen").value || 10);
+    settings.passwordLength = Math.max(4, Math.min(32, len));
+    saveSettingsObj(settings);
+    toast("Settings saved");
+  });
+
+  $("resetAll").addEventListener("click", () => {
+    if(!confirm("Hammasini tozalaymizmi? (users + settings)")) return;
+    localStorage.removeItem(KEY_USERS);
+    localStorage.removeItem(KEY_SETTINGS);
+    users = [];
+    settings = { passwordLength: 10 };
+    toast("Reset done");
+    showTab("users");
+  });
+
+  // -------------------------
+  // Init
+  // -------------------------
+  // Default demo users (agar bo‘sh bo‘lsa)
+  if(users.length === 0){
+    users = [
+      ensureCredentials({ id: uid(), fullName:"Alice Johnson", role:"Administrator", phone:"+1 234 567 890", photo:"" }),
+      ensureCredentials({ id: uid(), fullName:"Brian Smith", role:"Editor", phone:"+1 987 654 321", photo:"" }),
+      ensureCredentials({ id: uid(), fullName:"Catherine Lee", role:"Viewer", phone:"+1 456 123 789", photo:"" })
+    ];
+    saveUsers(users);
+  }
+
+  syncSettingsUI();
+  renderUsers();
+  rebuildUserPick();
+  renderCred();
+})();
+</script>
+</body>
+</html>
